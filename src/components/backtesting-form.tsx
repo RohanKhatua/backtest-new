@@ -270,12 +270,30 @@ const BacktestingForm = () => {
             return restructuredConditions;
         };
 
-        const cleanedData = {
-            entry_conditions: { [data.entry_conditions.type]: restructureData(data.entry_conditions) },
-            exit_conditions: { [data.exit_conditions.type]: restructureData(data.exit_conditions) }
+        const cleanData = (data: any): any => {
+            if (Array.isArray(data)) {
+                const cleanedArray = data.map(cleanData).filter(item => item !== undefined && item !== null && (Array.isArray(item) ? item.length > 0 : true));
+                return cleanedArray.length > 0 ? cleanedArray : undefined;
+            } else if (typeof data === 'object' && data !== null) {
+                const cleanedObject: any = {};
+                for (const key in data) {
+                    const cleanedValue = cleanData(data[key]);
+                    if (cleanedValue !== undefined) {
+                        cleanedObject[key] = cleanedValue;
+                    }
+                }
+                return Object.keys(cleanedObject).length > 0 ? cleanedObject : undefined;
+            } else {
+                return data;
+            }
         };
 
-        console.log('Cleaned Data:', JSON.stringify(cleanedData));
+        const cleanedData = cleanData({
+            entry_conditions: { [data.entry_conditions.type]: restructureData(data.entry_conditions) },
+            exit_conditions: { [data.exit_conditions.type]: restructureData(data.exit_conditions) }
+        });
+
+        console.log('Cleaned Data:', cleanedData);
 
         const validation = validateStrategy(cleanedData);
         console.log('Validation Result:', validation);
@@ -288,6 +306,7 @@ const BacktestingForm = () => {
             setSubmitFeedback("Form validation failed. Check console for errors.");
         }
     };
+
 
     return (
         <div style={{ display: 'flex' }}>
