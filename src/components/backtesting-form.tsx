@@ -111,11 +111,10 @@ interface ConditionField {
 const ConditionForm = ({ control, watch, prefix, errors }: { control: any, watch: any, prefix: string, errors: any }) => {
     const { fields, append, remove } = useFieldArray({
         control,
-        name: `${prefix}` as const,
+        name: `${prefix}.conditions` as const,
     });
 
     const handleConditionTypeChange = (index: number, value: string) => {
-        // Reset all fields for the current condition
         const updatedFields = [...fields] as ConditionField[];
         updatedFields[index] = { id: updatedFields[index].id, type: value };
         remove();
@@ -129,7 +128,7 @@ const ConditionForm = ({ control, watch, prefix, errors }: { control: any, watch
                     <div>
                         <label>Condition Type:</label>
                         <Controller
-                            name={`${prefix}.${index}.type`}
+                            name={`${prefix}.conditions.${index}.type`}
                             control={control}
                             defaultValue=""
                             render={({ field }) => (
@@ -147,72 +146,72 @@ const ConditionForm = ({ control, watch, prefix, errors }: { control: any, watch
                                         <option value="anything">Anything</option>
                                         <option value="everything">Everything</option>
                                     </select>
-                                    {errors?.[index]?.type && <p>{errors[index].type.message}</p>}
+                                    {errors?.conditions?.[index]?.type && <p>{errors.conditions[index].type.message}</p>}
                                 </div>
                             )}
                         />
                     </div>
 
-                    {watch(`${prefix}.${index}.type`) === "operation" && (
+                    {watch(`${prefix}.conditions.${index}.type`) === "operation" && (
                         <>
-                            <ValueForm control={control} watch={watch} name={`${prefix}.${index}.operation.left`} errors={errors?.[index]?.operation?.left} />
+                            <ValueForm control={control} watch={watch} name={`${prefix}.conditions.${index}.operation.left`} errors={errors?.conditions?.[index]?.operation?.left} />
                             <Controller
-                                name={`${prefix}.${index}.operation.operand`}
+                                name={`${prefix}.conditions.${index}.operation.operand`}
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => (
                                     <div>
                                         <input {...field} placeholder="Operator" />
-                                        {errors?.[index]?.operation?.operand && <p>{errors[index].operation.operand.message}</p>}
+                                        {errors?.conditions?.[index]?.operation?.operand && <p>{errors.conditions[index].operation.operand.message}</p>}
                                     </div>
                                 )}
                             />
-                            <ValueForm control={control} watch={watch} name={`${prefix}.${index}.operation.right`} errors={errors?.[index]?.operation?.right} />
+                            <ValueForm control={control} watch={watch} name={`${prefix}.conditions.${index}.operation.right`} errors={errors?.conditions?.[index]?.operation?.right} />
                             <Controller
-                                name={`${prefix}.${index}.comparator`}
+                                name={`${prefix}.conditions.${index}.comparator`}
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => (
                                     <div>
                                         <input {...field} placeholder="Comparator" />
-                                        {errors?.[index]?.comparator && <p>{errors[index].comparator.message}</p>}
+                                        {errors?.conditions?.[index]?.comparator && <p>{errors.conditions[index].comparator.message}</p>}
                                     </div>
                                 )}
                             />
-                            <ValueForm control={control} watch={watch} name={`${prefix}.${index}.value`} errors={errors?.[index]?.value} />
+                            <ValueForm control={control} watch={watch} name={`${prefix}.conditions.${index}.value`} errors={errors?.conditions?.[index]?.value} />
                         </>
                     )}
 
-                    {watch(`${prefix}.${index}.type`) === "indicator" && (
+                    {watch(`${prefix}.conditions.${index}.type`) === "indicator" && (
                         <>
-                            <IndicatorForm control={control} watch={watch} name={`${prefix}.${index}.indicator`} errors={errors?.[index]?.indicator} />
+                            <IndicatorForm control={control} watch={watch} name={`${prefix}.conditions.${index}.indicator`} errors={errors?.conditions?.[index]?.indicator} />
                             <Controller
-                                name={`${prefix}.${index}.comparator`}
+                                name={`${prefix}.conditions.${index}.comparator`}
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => (
                                     <div>
                                         <input {...field} placeholder="Comparator" />
-                                        {errors?.[index]?.comparator && <p>{errors[index].comparator.message}</p>}
+                                        {errors?.conditions?.[index]?.comparator && <p>{errors.conditions[index].comparator.message}</p>}
                                     </div>
                                 )}
                             />
-                            <ValueForm control={control} watch={watch} name={`${prefix}.${index}.value`} errors={errors?.[index]?.value} />
+                            <ValueForm control={control} watch={watch} name={`${prefix}.conditions.${index}.value`} errors={errors?.conditions?.[index]?.value} />
                         </>
                     )}
 
-                    {watch(`${prefix}.${index}.type`) === "anything" && (
+                    {watch(`${prefix}.conditions.${index}.type`) === "anything" && (
                         <div>
-                            <ConditionForm control={control} watch={watch} prefix={`${prefix}.${index}.anything`} errors={errors?.[index]?.anything} />
+                            <ConditionForm control={control} watch={watch} prefix={`${prefix}.conditions.${index}.anything`} errors={errors?.conditions?.[index]?.anything} />
                             <button type="button" onClick={() => append({ type: "anything", anything: [] })}>
                                 Add Condition to Anything
                             </button>
                         </div>
                     )}
 
-                    {watch(`${prefix}.${index}.type`) === "everything" && (
+                    {watch(`${prefix}.conditions.${index}.type`) === "everything" && (
                         <div>
-                            <ConditionForm control={control} watch={watch} prefix={`${prefix}.${index}.everything`} errors={errors?.[index]?.everything} />
+                            <ConditionForm control={control} watch={watch} prefix={`${prefix}.conditions.${index}.everything`} errors={errors?.conditions?.[index]?.everything} />
                             <button type="button" onClick={() => append({ type: "everything", everything: [] })}>
                                 Add Condition to Everything
                             </button>
@@ -236,8 +235,8 @@ const BacktestingForm = () => {
     const { control, watch, getValues, formState: { errors } } = useForm<StrategyFormType>({
         resolver: zodResolver(StrategySchema),
         defaultValues: {
-            entry_conditions: { anything: [] },
-            exit_conditions: { anything: [] }
+            entry_conditions: { type: 'everything', conditions: [] },
+            exit_conditions: { type: 'anything', conditions: [] }
         }
     });
 
@@ -251,37 +250,32 @@ const BacktestingForm = () => {
         const data = getValues();
         console.log('Form Data:', data);
 
-        // Remove "type" keys from the data and restructure
-        const restructureData = (conditions: any): any => {
-            if (Array.isArray(conditions)) {
-                return conditions.reduce((acc: any, condition: any) => {
-                    if (condition.type === 'anything' || condition.type === 'everything') {
-                        const key = condition.type;
-                        if (!acc[key]) {
-                            acc[key] = [];
-                        }
-                        acc[key].push(...restructureData(condition[key]));
-                    } else {
-                        const { type, ...rest } = condition;
-                        acc.push(rest);
-                    }
-                    return acc;
-                }, []);
-            } else if (typeof conditions === 'object' && conditions !== null) {
-                return Object.keys(conditions).reduce((acc: any, key) => {
-                    acc[key] = restructureData(conditions[key]);
-                    return acc;
-                }, {});
-            }
-            return conditions;
+        const restructureData = (conditionSet: any): any => {
+            const restructuredConditions = conditionSet.conditions.map((condition: any) => {
+                if (condition.type === 'anything' || condition.type === 'everything') {
+                    return {
+                        [condition.type]: restructureData({
+                            type: condition.type,
+                            conditions: condition[condition.type]
+                        })
+                    };
+                } else {
+                    const { id, type, ...rest } = condition;
+                    // Only include non-empty fields
+                    return Object.fromEntries(
+                        Object.entries(rest).filter(([_, v]) => v != null && v !== '')
+                    );
+                }
+            }).filter((condition: object) => Object.keys(condition).length > 0); // Remove empty conditions
+            return restructuredConditions;
         };
 
         const cleanedData = {
-            entry_conditions: restructureData(data.entry_conditions),
-            exit_conditions: restructureData(data.exit_conditions)
+            entry_conditions: { everything: restructureData(data.entry_conditions) },
+            exit_conditions: { anything: restructureData(data.exit_conditions) }
         };
 
-        console.log('Cleaned Data:', cleanedData);
+        console.log('Cleaned Data:', JSON.stringify(cleanedData));
 
         const validation = validateStrategy(cleanedData);
         console.log('Validation Result:', validation);
@@ -299,9 +293,31 @@ const BacktestingForm = () => {
         <div style={{ display: 'flex' }}>
             <form style={{ width: '50%' }}>
                 <h2>Entry Conditions</h2>
+                <Controller
+                    name="entry_conditions.type"
+                    control={control}
+                    defaultValue="everything"
+                    render={({ field }) => (
+                        <select {...field}>
+                            <option value="everything">Everything</option>
+                            <option value="anything">Anything</option>
+                        </select>
+                    )}
+                />
                 <ConditionForm control={control} watch={watch} prefix="entry_conditions" errors={errors.entry_conditions} />
 
                 <h2>Exit Conditions</h2>
+                <Controller
+                    name="exit_conditions.type"
+                    control={control}
+                    defaultValue="anything"
+                    render={({ field }) => (
+                        <select {...field}>
+                            <option value="anything">Anything</option>
+                            <option value="everything">Everything</option>
+                        </select>
+                    )}
+                />
                 <ConditionForm control={control} watch={watch} prefix="exit_conditions" errors={errors.exit_conditions} />
 
                 <button type="button" onClick={onSubmit}>Submit</button>
@@ -313,6 +329,7 @@ const BacktestingForm = () => {
                     <pre>{JSON.stringify(watchAllFields, null, 2)}</pre>
                 </div>
             )}
+
 
             <div style={{ width: '50%', padding: '0 20px' }}>
                 <Editor

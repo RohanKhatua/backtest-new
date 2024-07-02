@@ -70,12 +70,12 @@ export const StrategySchema = z.object({
 );
 
 export type StrategyFormType = {
-    entry_conditions?: {
-        anything?: any[];
-        everything?: any[];
+    entry_conditions: {
+        type: 'anything' | 'everything';
+        conditions: any[];
     };
-    exit_conditions?: {
-        anything?: any[];
-        everything?: any[];
+    exit_conditions: {
+        type: 'anything' | 'everything';
+        conditions: any[];
     };
 };
