@@ -1,8 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO: Get all supported comparators from the backend
-// TODO: Get all supported operators from the backend
-// TODO: Get all supported indicators from the backend
-// Use them to refine schemas
 import { z } from 'zod';
 
 const IndicatorSchema = z.object({
@@ -48,13 +44,22 @@ const ConditionSchema: z.ZodType<any> = z.lazy(() =>
 );
 
 const AnyOrAllListSchema = z.object({
-    anything: z.array(ConditionSchema).min(1, 'At least one condition is required for "anything"').optional(),
-    everything: z.array(ConditionSchema).min(1, 'At least one condition is required for "everything"').optional()
+    anything: z.array(ConditionSchema).optional(),
+    everything: z.array(ConditionSchema).optional()
 }).refine(
-    data => data.anything || data.everything,
+    data => (data.anything && data.anything.length > 0) || (data.everything && data.everything.length > 0),
     {
-        message: "Either 'anything' or 'everything' must be provided",
-        path: ["anything"]
+        message: "Either 'anything' or 'everything' must have at least one element",
+    }
+).refine(
+    data => !(data.anything && data.anything.length === 0),
+    {
+        message: "'anything' must have at least one element if it exists",
+    }
+).refine(
+    data => !(data.everything && data.everything.length === 0),
+    {
+        message: "'everything' must have at least one element if it exists",
     }
 );
 

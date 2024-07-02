@@ -85,18 +85,18 @@ const ValueForm = ({ control, watch, name, errors }: { control: any, watch: any,
 
             {valueType === "number" ? (
                 <Controller
-                    name={`${name}.value`}
+                    name={name}
                     control={control}
                     defaultValue=""
                     render={({ field }) => (
                         <div>
-                            <input type="number" {...field} placeholder="Enter Value" />
+                            <input type="number" {...field} placeholder="Enter Value" onChange={(e) => field.onChange(Number(e.target.value))} />
                             {errors?.value && <p>{errors.value.message}</p>}
                         </div>
                     )}
                 />
             ) : (
-                <IndicatorForm control={control} watch={watch} name={`${name}.value`} errors={errors?.value} />
+                <IndicatorForm control={control} watch={watch} name={name} errors={errors?.value} />
             )}
         </div>
     );
@@ -156,13 +156,13 @@ const ConditionForm = ({ control, watch, prefix, errors }: { control: any, watch
                         <>
                             <ValueForm control={control} watch={watch} name={`${prefix}.conditions.${index}.operation.left`} errors={errors?.conditions?.[index]?.operation?.left} />
                             <Controller
-                                name={`${prefix}.conditions.${index}.operation.operand`}
+                                name={`${prefix}.conditions.${index}.operation.operator`}
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => (
                                     <div>
                                         <input {...field} placeholder="Operator" />
-                                        {errors?.conditions?.[index]?.operation?.operand && <p>{errors.conditions[index].operation.operand.message}</p>}
+                                        {errors?.conditions?.[index]?.operation?.operator && <p>{errors.conditions[index].operation.operator.message}</p>}
                                     </div>
                                 )}
                             />
@@ -271,8 +271,8 @@ const BacktestingForm = () => {
         };
 
         const cleanedData = {
-            entry_conditions: { everything: restructureData(data.entry_conditions) },
-            exit_conditions: { anything: restructureData(data.exit_conditions) }
+            entry_conditions: { [data.entry_conditions.type]: restructureData(data.entry_conditions) },
+            exit_conditions: { [data.exit_conditions.type]: restructureData(data.exit_conditions) }
         };
 
         console.log('Cleaned Data:', JSON.stringify(cleanedData));
@@ -329,7 +329,6 @@ const BacktestingForm = () => {
                     <pre>{JSON.stringify(watchAllFields, null, 2)}</pre>
                 </div>
             )}
-
 
             <div style={{ width: '50%', padding: '0 20px' }}>
                 <Editor
