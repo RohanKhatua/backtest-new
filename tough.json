@@ -1,0 +1,65 @@
+{
+	"entry_conditions": {
+		"anything": [
+			{
+				"indicator": {
+					"name": "MovingAverage",
+					"params": {
+						"period": 200
+					}
+				},
+				"comparator": "GreaterThan",
+				"value": 50
+			},
+			{
+				"indicator": {
+					"name": "Price"
+				},
+				"comparator": "Rises",
+				"value": 3
+			}
+		]
+	},
+    "exit_conditions": {
+        "everything": [
+            {
+                "indicator": {
+                    "name": "MovingAverage",
+                    "params": {
+                        "period": 200
+                    }
+                },
+                "comparator": "LessThan",
+                "value": 50
+            },
+            {
+                "indicator": {
+                    "name": "Price"
+                },
+                "comparator": "Falls",
+                "value": 3
+            },
+            {
+                "anything": [
+                    {
+                        "indicator": {
+                            "name": "MovingAverage",
+                            "params": {
+                                "period": 200
+                            }
+                        },
+                        "comparator": "LessThan",
+                        "value": 50
+                    },
+                    {
+                        "indicator": {
+                            "name": "Price"
+                        },
+                        "comparator": "Falls",
+                        "value": 3
+                    }
+                ]                
+            }
+        ]
+    }
+}
