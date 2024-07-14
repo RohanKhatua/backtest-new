@@ -250,36 +250,46 @@ const BacktestingForm = () => {
         const data = getValues();
         console.log('Form Data:', data);
 
-        const restructureData = (conditionSet: any): any => {
-            const restructuredConditions = conditionSet.conditions.map((condition: any) => {
+        const restructureData = (conditionSet:any) => {
+            // Ensure that conditionSet.conditions is an array before proceeding
+            if (!Array.isArray(conditionSet.conditions)) {
+                console.error("Expected 'conditions' to be an array, but received:", conditionSet.conditions);
+                return [];
+            }
+
+            return conditionSet.conditions.map((condition:any) => {
+                // Check for nested 'anything' or 'everything' and adjust accordingly
                 if (condition.type === 'anything' || condition.type === 'everything') {
-                    return {
-                        [condition.type]: restructureData({
-                            type: condition.type,
-                            conditions: condition[condition.type]
-                        })
-                    };
+                    // Make sure that the 'anything' or 'everything' itself is treated as an array
+                    if (condition[condition.type] && condition[condition.type].conditions) {
+                        return {
+                            [condition.type]: restructureData(condition[condition.type])
+                        };
+                    } else {
+                        console.error(`Expected '${condition.type}.conditions' to be present, but received:`, condition[condition.type]);
+                        return {}; // Return an empty object or handle the case appropriately
+                    }
                 } else {
                     const { id, type, ...rest } = condition;
-                    // Only include non-empty fields
                     return Object.fromEntries(
-                        Object.entries(rest).filter(([_, v]) => v != null && v !== '')
+                        Object.entries(rest).filter(([_, value]) => value !== null && value !== '')
                     );
                 }
-            }).filter((condition: object) => Object.keys(condition).length > 0); // Remove empty conditions
-            return restructuredConditions;
+            }).filter((condition:object) => Object.keys(condition).length > 0);
         };
+
 
         const cleanData = (data: any): any => {
             if (Array.isArray(data)) {
-                const cleanedArray = data.map(cleanData).filter(item => item !== undefined && item !== null && (Array.isArray(item) ? item.length > 0 : true));
-                return cleanedArray.length > 0 ? cleanedArray : undefined;
+                return data.map(cleanData).filter(item => item !== undefined && item !== null && (Array.isArray(item) ? item.length > 0 : true));
             } else if (typeof data === 'object' && data !== null) {
                 const cleanedObject: any = {};
                 for (const key in data) {
-                    const cleanedValue = cleanData(data[key]);
-                    if (cleanedValue !== undefined) {
-                        cleanedObject[key] = cleanedValue;
+                    if (key !== 'valueType') { // Ensure 'valueType' is not included
+                        const cleanedValue = cleanData(data[key]);
+                        if (cleanedValue !== undefined) {
+                            cleanedObject[key] = cleanedValue;
+                        }
                     }
                 }
                 return Object.keys(cleanedObject).length > 0 ? cleanedObject : undefined;
@@ -287,6 +297,7 @@ const BacktestingForm = () => {
                 return data;
             }
         };
+
 
         const cleanedData = cleanData({
             entry_conditions: { [data.entry_conditions.type]: restructureData(data.entry_conditions) },
